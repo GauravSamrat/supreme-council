@@ -1,0 +1,21 @@
+{
+  "providers": {
+    "openrouter": {
+      "confirmed_unbilled_free_account": true,
+      "checked_on": "2026-11-25",
+      "daily_cap": 40
+    },
+    "groq": {
+      "confirmed_unbilled_free_account": false,
+      "checked_on": "YYYY-MM-DD",
+      "daily_cap": 20,
+      "approved_models": []
+    },
+    "gemini": {
+      "confirmed_unbilled_free_account": false,
+      "checked_on": "YYYY-MM-DD",
+      "daily_cap": 10,
+      "approved_models": []
+    }
+  }
+}
