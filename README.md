@@ -1,61 +1,40 @@
-# Supreme Council v0.1
+# Supreme Council v0.2 — development
 
-Personal Windows CLI; no UI, no hosting. Python 3.10+.
+Personal Windows desktop/CLI tool. Python 3.10+. No mandatory paid services.
 
-## Setup (PowerShell, from the extracted supreme-council folder)
+## Upgrade from v0.1
 
-```powershell
-py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-Copy-Item .env.example .env
-notepad .env
-notepad config.json
-```
+Save any local code changes first. Keep .env, config.json, usage.sqlite3 and runs/ intact. From the project folder:
 
-Start with a new, unfunded OpenRouter account/key: https://openrouter.ai/keys . Do not add credits, a payment method, automatic top-ups, BYOK or a billed workspace. Paste the key after `OPENROUTER_API_KEY=` in `.env` locally. Do not share it. After confirming the account is unbilled, change ONLY the openrouter `confirmed_unbilled_free_account` to true and `checked_on` to today's local date (YYYY-MM-DD). The confirmation expires after seven days; recheck account status and renew it. All providers start disabled. No account billing status is automatically verified.
+    git fetch origin
+    git switch development/v0.2
+    git pull --ff-only origin development/v0.2
+    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+    .\.venv\Scripts\python.exe -m unittest -v
 
-```powershell
-.\.venv\Scripts\python.exe -m unittest -v
-.\.venv\Scripts\python.exe council.py discover
-.\.venv\Scripts\python.exe council.py run --mode quick --prompt "Reply with the word OK."
-```
+Double-click START_COUNCIL.bat to launch. Or:
 
-Type SEND after inspecting selected models. No API inference calls occur during `discover`. The live catalog is read before each run. A run exits with code 2 if fewer than two usable responses arrive, but still saves whatever was received.
+    .\.venv\Scripts\python.exe gui.py
 
-## Real use
+Paste a short brief (max 12,000 UTF-8 bytes), choose mode and 100/250/500 words per AI, and consent to cloud submission. Progress appears in the log. Open report or Copy report after the run. Cancel stops the local process, but cannot guarantee remote inference cancellation. Collected responses remain in runs/.
 
-```powershell
-.\.venv\Scripts\python.exe council.py run --mode council
-```
+## CLI
 
-Paste multiline text, type `/end` on a separate line, then type SEND. Use `--synthesize` for an optional additional AI call that sends the collected answers to one responding model. Use `--file prompt.txt` for long prompts (maximum 48,000 UTF-8 bytes; provider context limits also apply). `--tokens` controls the response budget, 256–8192, default 4096. Quick/Council/Supreme select up to 3/5/8 models respectively, subject to availability and caps. `--yes` explicitly skips the confirmation; use only when deliberately sending non-sensitive content.
+    .\.venv\Scripts\python.exe council.py discover
+    .\.venv\Scripts\python.exe council.py run --mode quick --words 250 --prompt "Recommend a simple local database for a personal task app." --synthesize
 
-For clipboard input (PowerShell):
+Quick/Council/Supreme target 3/5/8 models, plus at most two replacement attempts and one optional synthesis call. Local caps may prevent extra requests. The word count is a request to the model, not a guaranteed hard word cap. The larger token allowance reserves space for reasoning. Known context and completion limits are respected using a conservative UTF-8 byte estimate, not an exact tokenizer. Unknown output limits use a conservative 4096-token cap. Large briefs are rejected rather than silently shortened. Model reliability history influences selection; it is not a validated intelligence ranking.
 
-```powershell
-Get-Clipboard -Raw | Set-Content -Encoding UTF8 prompt.txt
-.\.venv\Scripts\python.exe council.py run --file prompt.txt --mode council
-```
+The complete original brief and actual sent prompts are saved locally. Synthesis uses compact response fields, and may skip if no suitable successful judge or the input is too large. It is not independent fact verification.
 
-The local `prompt.txt` contains your clipboard content; delete it when no longer needed. Nothing monitors your clipboard. Attach the generated `runs/.../master_report.md` to ChatGPT; it includes the actual response texts, not just links. Each response is also saved separately with metadata. Text is unchanged except redaction of configured API keys if echoed. API caps can truncate responses; these are marked partial. No private reasoning or hidden provider text is recovered.
+## Accounts
 
-## Optional additional providers
+Create only unfunded, unbilled free-tier accounts. For OpenRouter use https://openrouter.ai/keys . Put keys in .env locally, never commit them. Confirm account status and update checked_on in config.json; confirmation expires after seven days. For Groq and Gemini, verify exact model IDs and free eligibility before adding approved_models. No direct provider billing verification. Actual cost must be checked in provider dashboards. No paid fallback. Free-tier prompts may be retained or used for training; do not send confidential material.
 
-Groq: https://console.groq.com/keys and https://console.groq.com/docs/rate-limits
-Gemini: https://aistudio.google.com/apikey and https://ai.google.dev/gemini-api/docs/pricing
+## Rollback
 
-Use only unbilled free-tier accounts/projects. Add keys to `.env`. Confirm the exact free-tier model IDs and your account quota in the official dashboard; fill `approved_models` with those IDs in config.json, then set the confirmation to true and today's date. Lower the local daily cap if your actual quota is smaller. The script requires catalog presence but cannot verify direct provider pricing or your billing status. A missing key, missing confirmation, expired confirmation or failed catalog disables the provider. The conservative rolling request caps apply only to this tool, not other software or provider token quotas. HTTP 429 is logged with no retry. Check actual billing dashboards after the smoke test. No absolute zero-cost guarantee.
+After saving local source changes, use git switch --detach v0.1.0 to return to the original CLI. Use git switch development/v0.2 to return to development. Local ignored data remains in the folder.
 
-## What is implemented
+## Testing status
 
-- Live OpenRouter discovery of text models with `:free` and strictly zero catalog pricing; requests carry a zero price ceiling, no model fallback.
-- Manually confirmed Groq and Gemini adapters, selected by live catalog plus exact allowlist.
-- Developer-family diversity heuristic, not a validated task-specific ranking. No hardcoded OpenRouter model list.
-- Parallel calls, bounded concurrency, request ledger, fail-closed configuration, output caps, per-response files as calls finish, complete Markdown report, optional synthesis.
-- No automatic execution of model-generated content, no secret logging, no scheduled agent or browser automation.
-
-## Verification and limitations
-
-Seven unit/mock tests pass in the creation environment. No live inference or Windows runtime test performed; user credentials are required for those. Official API docs: https://openrouter.ai/docs/api/api-reference/models/get-models , https://openrouter.ai/docs/guides/routing/provider-selection , https://console.groq.com/docs/openai , https://ai.google.dev/gemini-api/docs/openai .
-
-Free tiers may retain/train on prompts. Do not submit confidential material, private source code, credentials or client data. Free model output may be wrong. Optional synthesis is not independent evidence verification. Discovery refreshes only connected providers when the CLI runs; autonomous web discovery, scheduled runs, task-specific benchmarks, evidence ledger, Ollama and ChatGPT integration are future work.
+Run the unit/mock tests before use. Windows GUI and real provider behavior require local testing. No claim of measured intelligence gains or guaranteed free billing.
