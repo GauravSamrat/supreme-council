@@ -75,4 +75,23 @@ class CouncilTests(unittest.TestCase):
                 self.assertFalse(ms); self.assertTrue(notes)
         asyncio.run(work())
 
+
+    def test_budget_and_compact(self):
+        m={'context_length':10000,'max_output_tokens':1024}
+        self.assertEqual(c.budget(m,'hello',8192),1024)
+        self.assertEqual(c.budget(m,'x'*10000,8192),0)
+        self.assertEqual(c.budget({},'hello',8192),4096)
+        self.assertIn('मूल prompt',c.compact('मूल prompt',250))
+        self.assertIn('250 words',c.compact('मूल prompt',250))
+
+    def test_health_and_selection(self):
+        a={'provider':'openrouter','model':'a/x:free','family':'a'}
+        b={'provider':'openrouter','model':'b/x:free','family':'b'}
+        history={}
+        c.update_health(history,{**a,'status':'error'})
+        self.assertEqual(c.health_order([a,b],history),[b,a])
+        c.update_health(history,{**a,'status':'ok'})
+        self.assertEqual(c.health_order([a,b],history),[a,b])
+        self.assertEqual(c.select([a,b],0),[])
+
 if __name__=='__main__': unittest.main()
