@@ -152,3 +152,42 @@ class AdaptiveTests(unittest.TestCase):
         self.assertEqual(len(payload['answers']), 1)
         self.assertEqual(len(payload['answers'][0]['sources']), 2)
         self.assertEqual(answers[0]['text'], text)
+    def test_direct_catalog_requires_exact_approval(self):
+        async def work():
+            responses = {'data': [{'id': 'approved-chat'}, {'id': 'unapproved-chat'}]}
+            async with httpx.AsyncClient(transport=httpx.MockTransport(
+                    lambda req: httpx.Response(200, json=responses))) as client:
+                cfg = {'providers': {'groq': dict(self.cfg['providers']['openrouter'],
+                                                 approved_models=['approved-chat'])}}
+                routes, _ = await council.discover(client, cfg, {'groq': 'mock-key'})
+                self.assertEqual([r['model'] for r in routes], ['approved-chat'])
+                self.assertIn('billing not API-verified', routes[0]['proof'])
+                cfg['providers']['groq']['confirmed_unbilled_free_account'] = False
+                routes, _ = await council.discover(client, cfg, {'groq': 'mock-key'})
+                self.assertEqual(routes, [])
+        asyncio.run(work())
+
+    def test_timeout_empty_and_provider_quota(self):
+        async def work():
+            def handler(request):
+                if request.method == 'GET':
+                    return httpx.Response(200, json={'data': [model(f'{name}/x:free') for name in 'abcd']})
+                body = json.loads(request.content)
+                if body['model'].startswith('a/'):
+                    raise httpx.ReadTimeout('raw secret metadata', request=request)
+                if body['model'].startswith('b/'):
+                    return httpx.Response(200, json={'choices': [{'message': {'content': ''},
+                                                                  'finish_reason': 'length'}]})
+                if body['model'].startswith('c/'):
+                    return httpx.Response(429, json={'error': {'code': 'insufficient_quota'}})
+                self.fail('Provider quota must prevent a subsequent HTTP request')
+
+            async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+                keys = {'openrouter': 'mock-key'}
+                models, _ = await council.discover(client, self.cfg, keys)
+                sem = {'openrouter': asyncio.Semaphore(1)}
+                results = [await council.ask(client, sem, m, 'prompt', keys, self.db, 4096) for m in models]
+                self.assertEqual([r.get('category') for r in results], ['timeout', 'empty_at_limit', 'quota', None])
+                self.assertEqual(results[-1]['error'], 'circuit open')
+                self.assertNotIn('raw secret metadata', str(results))
+        asyncio.run(work())
