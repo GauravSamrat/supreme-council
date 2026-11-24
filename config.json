@@ -1,9 +1,10 @@
 {
   "providers": {
     "openrouter": {
-      "confirmed_unbilled_free_account": true,
-      "checked_on": "2026-11-25",
-      "daily_cap": 40
+      "confirmed_unbilled_free_account": false,
+      "checked_on": "YYYY-MM-DD",
+      "daily_cap": 40,
+      "allow_free_router": false
     },
     "groq": {
       "confirmed_unbilled_free_account": false,
