@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supreme Council</title>
+<style>
+:root{color-scheme:light dark;font:100%/1.6 system-ui,sans-serif}
+body{margin:0;background:#f4f2eb;color:#222c27}
+main{max-width:43rem;margin:0 auto;padding:clamp(1.5rem,7vw,5rem) 1.5rem}
+h1{font-size:clamp(2.6rem,9vw,5rem);line-height:1.08;letter-spacing:-.06em;margin:0}
+h2{font-size:1.3rem;margin:2rem 0 .4rem}
+p{max-width:58ch}
+a{color:#146347;text-underline-offset:.2em}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem 1.1rem;margin:1.6rem 0}
+.primary{background:#174d3c;color:white;padding:.55rem .95rem;border-radius:.35rem}
+a:focus-visible{outline:3px solid currentColor;outline-offset:4px}
+@media(prefers-color-scheme:dark){body{background:#19231f;color:#ecf1e9}a{color:#9cdbc0}.primary{background:#9cdbc0;color:#17251e}}
+</style>
+</head>
+<body>
+<main>
+<h1>Supreme Council</h1>
+<p>A Windows desktop app for gathering and comparing answers from eligible free AI models.</p>
+<nav class="actions" aria-label="Downloads and documentation">
+<a class="primary" href="https://github.com/GauravSamrat/supreme-council/releases">Release downloads</a>
+<a href="https://github.com/GauravSamrat/supreme-council/blob/development/v0.3/README.md">Documentation</a>
+</nav>
+<h2>What it does</h2>
+<ul>
+<li>Ranks eligible models by task fit, reliability and diversity.</li>
+<li>Replaces failures within shared request and token budgets.</li>
+<li>Saves individual responses and a report, even when synthesis fails.</li>
+</ul>
+<h2>Install on Windows</h2>
+<ol>
+<li>Install Python 3.10 or newer with Tcl/Tk and the Windows launcher.</li>
+<li>Extract the Windows ZIP and run <code>SETUP_COUNCIL.bat</code>.</li>
+<li>Configure local provider credentials and approvals, then run <code>START_COUNCIL.bat</code>.</li>
+</ol>
+<h2>Privacy and free-tier use</h2>
+<p>Credentials stay on your computer. Cloud submissions require consent and free-tier providers may retain submitted text. Confidential mode blocks cloud execution.</p>
+</main>
+</body>
+</html>

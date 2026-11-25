@@ -191,3 +191,18 @@ class AdaptiveTests(unittest.TestCase):
                 self.assertEqual(results[-1]['error'], 'circuit open')
                 self.assertNotIn('raw secret metadata', str(results))
         asyncio.run(work())
+    def test_reliability_observations_change_adaptive_ranking(self):
+        state = State(self.db)
+        other = dict(self.route, model='a/y:free')
+        with patch('adaptive.time.time', return_value=1_000_000) as clock:
+            for candidate, outcome in ((self.route, 'error'), (other, 'ok')):
+                reservation, _ = state.claim(candidate, 500, 'answer', 40, 10_000)
+                state.finish(reservation, candidate, {'status': outcome, 'latency_seconds': 1})
+            metrics = state.metrics()
+            initial_gap = score(other, metrics, 'general', []) - score(self.route, metrics, 'general', [])
+            self.assertGreater(initial_gap, 0)
+            clock.return_value += 28 * 86400
+            metrics = state.metrics()
+            aged_gap = score(other, metrics, 'general', []) - score(self.route, metrics, 'general', [])
+            self.assertGreater(aged_gap, 0)
+            self.assertLess(aged_gap, initial_gap)

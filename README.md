@@ -2,7 +2,16 @@
 
 A Windows desktop app and CLI for gathering responses from eligible free AI models. The local request and estimated-token limits are safety ceilings. Provider limits and account billing status must be checked separately.
 
-## Install or upgrade
+## Windows ZIP installation
+
+1. Download the Windows ZIP from [GitHub Releases](https://github.com/GauravSamrat/supreme-council/releases) and extract it to a writable folder.
+2. Install [Python 3.10 or newer](https://www.python.org/downloads/windows/) with Tcl/Tk and the Windows Python launcher.
+3. Run **SETUP_COUNCIL.bat** once to set up the environment and create an empty local `.env`. This needs access to the Python package index and uses no AI provider calls.
+4. Configure the provider account below, then double-click **START_COUNCIL.bat**. Use **TEST_COUNCIL.bat** to run the local mock suite.
+
+The ZIP contains application source, launchers and documentation. Python and dependency packages are installed separately. Keep the extracted directory private after adding keys. For an upgrade, keep existing `.env`, `config.local.json`, `usage.sqlite3` and `runs\` locally.
+
+## Install or upgrade from a Git checkout
 
 From PowerShell in the repository, with the app closed, save existing v0.2 settings before switching branches. If you already have a local override, review and merge provider settings into it locally.
 
@@ -102,3 +111,8 @@ git switch development/v0.2
 ```
 
 For the historical v0.1.0 release, use a separate checkout to keep its local storage independent. No provider inference is required by the automated tests.
+
+
+## Distribution and hosting
+
+See the [distribution verification report](DISTRIBUTION_TESTS.md). GitHub Pages can host the documentation and link to release assets on eligible GitHub Free repositories. It serves static files. The Python, Tkinter and SQLite application runs on the user’s Windows machine. Running the current GUI remotely without rewriting it would require a separately maintained Windows desktop or VM, remote desktop access, persistent storage and local credential management on that host. No continuously available zero-cost remote desktop service was verified for this distribution. No hosted inference proxy or public API is needed. [GitHub Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
